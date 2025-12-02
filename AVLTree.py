@@ -138,7 +138,7 @@ class AVLTree(object):
 	dictionary larger than node.key.
 	"""
 	def split(self, node):
-		return None, None
+		return node.left, node.right
 
 	
 	"""returns an array representing dictionary 
@@ -147,8 +147,21 @@ class AVLTree(object):
 	@returns: a sorted list according to key of touples (key, value) representing the data structure
 	"""
 	def avl_to_array(self):
-		return None
+		arr = []
+		AVLTree.inorder_traversal(self.root, arr)
+		return arr
 
+
+	"""helper recursive function for *avl_to_array
+	@returns: a list from an inorder traversal
+	"""
+	@staticmethod
+	def inorder_traversal(root, arr=[]):
+		if not root:
+			return
+		AVLTree.inorder_traversal(root.left, arr)
+		arr.append((root.key, root.value))
+		AVLTree.inorder_traversal(root.right, arr)
 
 	"""returns the node with the maximal key in the dictionary
 
@@ -173,4 +186,4 @@ class AVLTree(object):
 	@returns: the root, None if the dictionary is empty
 	"""
 	def get_root(self):
-		return None
+		return self.root
