@@ -9,6 +9,8 @@
 """A class represnting a node in an AVL tree"""
 
 class AVLNode(object):
+
+
 	"""Constructor, you are allowed to add more fields. 
 	
 	@type key: int
@@ -23,6 +25,7 @@ class AVLNode(object):
 		self.right = None
 		self.parent = None
 		self.height = -1
+
 		
 
 	"""returns whether self is not a virtual node 
@@ -45,6 +48,7 @@ class AVLTree(object):
 	"""
 	def __init__(self):
 		self.root = None
+		self.max_node = None
 
 
 	"""searches for a node in the dictionary corresponding to the key (starting at the root)
@@ -56,8 +60,15 @@ class AVLTree(object):
 	and e is the number of edges on the path between the starting node and ending node+1.
 	"""
 	def search(self, key):
-		return None, -1
+		A = self.root
+		e = 1
+		return self.search_rec(A,key, e)
 
+	def search_rec(self,A,key,e):
+		if A is None: return None,e
+		if A.key == key: return A,e
+		elif A.key <key: return key.search_rec(A.right, key, e + 1)
+		else: return key.search_rec(A.left, key, e + 1)
 
 	"""searches for a node in the dictionary corresponding to the key, starting at the max
         
@@ -84,6 +95,16 @@ class AVLTree(object):
 	and h is the number of PROMOTE cases during the AVL rebalancing
 	"""
 	def insert(self, key, val):
+		e =0
+		h=0
+		if self.root is None:
+			self.root = AVLNode(key,val)
+			self.max_node = self.root
+			return self.root,e,h
+		A = self.root
+		return self.insert_rec(A, key, e)
+	
+	def insert_rec(self, A, key, e):
 		return None, -1, -1
 
 
