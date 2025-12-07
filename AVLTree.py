@@ -103,7 +103,7 @@ class AVLTree(object):
 			return self.root,e,h
 		A = self.root
 		return self.insert_rec(A, key, e)
-	
+
 	def insert_rec(self, A, key, e):
 		return None, -1, -1
 
@@ -145,7 +145,43 @@ class AVLTree(object):
 	or the opposite way
 	"""
 	def join(self, tree2, key, val):
-		return
+		x = AVLNode(key,val)
+		if self.root.height > key > tree2.root.height:
+			B = tree2.max_node()
+			while B.height < self.root.height:
+				B = B.parent
+
+			#move the subtree of B under X alongside tree2
+			x.left = B
+			x.right = self.root
+			B.parent.right = x
+
+			# updating the parents:
+			x.parent = B.parent
+			B.parent = x
+			self.root.parent = x
+
+			#update the root of the new tree
+			self.root = tree2.root
+
+		if self.root.height < key < tree2.root.height:
+			B = self.max_node()
+			while B.height < self.root.height:
+				B = B.parent
+
+			# move the subtree of B under X alongside out current tree
+			x.right = tree2.root
+			x.left = B
+			B.parent.right =x
+
+			# updating the parents:
+			x.parent = B.parent
+			B.parent = x
+			tree2.root.parent = x
+
+			#No need to update the root of the tree, as it remains self.root
+
+
 
 
 	"""splits the dictionary at a given node
@@ -159,7 +195,24 @@ class AVLTree(object):
 	dictionary larger than node.key.
 	"""
 	def split(self, node):
-		return node.left, node.right
+		T1 = AVLTree()
+		T1.root = node.left
+		T2 = AVLTree()
+		T2.root= node.right
+		A = node
+		while A.parent != None: # until we get to root
+			if A.parent.right == A:
+				AVL_tmp = AVLTree()
+				AVL_tmp.root = A.parent.left
+				T1.join(AVL_tmp, A.parent.key, A.parent.val) #if the node is a RIGHT son we join the subtree of his parent to the LEFT tree
+			if A.parent.left == A:
+				AVL_tmp = AVLTree()
+				AVL_tmp.root = A.parent.right
+				T2.join(AVL_tmp, A.parent.key, A.parent.val) #if the node is a LEFT son we join the subtree of his parent to the RIGHT tree
+			A = A.parent
+		return T1,T2
+
+
 
 	
 	"""returns an array representing dictionary 
