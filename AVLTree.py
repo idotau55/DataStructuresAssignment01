@@ -7,6 +7,8 @@
 
 
 """A class represnting a node in an AVL tree"""
+from email.errors import NonASCIILocalPartDefect
+
 
 class AVLNode(object):
 
@@ -18,15 +20,21 @@ class AVLNode(object):
 	@type value: string
 	@param value: data of your node
 	"""
-	def __init__(self, key, value):
+	def __init__(self, key=-1, value=-1,isRealNodeOverride = True):
 		self.key = key
 		self.value = value
-		self.left = None
-		self.right = None
+		self.left = AVLNode(isRealNodeOverride = False)
+		self.right = AVLNode(isRealNodeOverride = False)
 		self.parent = None
 		self.height = -1
+		self.isRealNode = isRealNodeOverride
+		self.oldHeight = -1 #EACH TIME WE EDIT A HEIGHT WE NEED TO REMEMBER TO PUT IT FIRST IN THE OLD HEIGHT, THIS IS FOR THE INSERT AND DELETE FUCTIONS
+							# DO NOT EDIT HEIGHT MANUALLY, ONLY WITH THE setheight() funtion
 
-		
+	def setheight(self,newHeight):
+		self.oldHeight = self.height
+		self.height = newHeight
+
 
 	"""returns whether self is not a virtual node 
 
@@ -34,9 +42,10 @@ class AVLNode(object):
 	@returns: False if self is a virtual node, True otherwise.
 	"""
 	def is_real_node(self):
-		return False
+		return self.isRealNode # Need to maintain it
 
-
+	def BF(self, y):
+		return y.left.height - y.right.height
 """
 A class implementing an AVL tree.
 """
@@ -79,7 +88,9 @@ class AVLTree(object):
 	and e is the number of edges on the path between the starting node and ending node+1.
 	"""
 	def finger_search(self, key):
-		return None, -1
+		A = self.max_node()
+		e =0
+		return A,e
 
 
 	"""inserts a new node into the dictionary with corresponding key and value (starting at the root)
@@ -97,15 +108,25 @@ class AVLTree(object):
 	def insert(self, key, val):
 		e =0
 		h=0
+		x = AVLNode(key,val)
 		if self.root is None:
 			self.root = AVLNode(key,val)
 			self.max_node = self.root
 			return self.root,e,h
 		A = self.root
-		return self.insert_rec(A, key, e)
+		while A is not None:
+			if A.key < key:
+				A = A.right
+			else:
+				A = A.left
+			e+=1
+		if A.parent.key < key : A.right = x
+		else: A.left = x
 
-	def insert_rec(self, A, key, e):
-		return None, -1, -1
+		self.Rebalance(x)
+		return x,e,h # I dont understand what they want h to be and how to get it
+
+
 
 
 	"""inserts a new node into the dictionary with corresponding key and value, starting at the max
@@ -145,7 +166,7 @@ class AVLTree(object):
 	or the opposite way
 	"""
 	def join(self, tree2, key, val):
-		x = AVLNode(key,val)
+		x = AVLNode(key,val,)
 		if self.root.height > key > tree2.root.height:
 			B = tree2.max_node()
 			while B.height < self.root.height:
@@ -180,6 +201,8 @@ class AVLTree(object):
 			tree2.root.parent = x
 
 			#No need to update the root of the tree, as it remains self.root
+
+			#NEED TO BALANCE THE TREE
 
 
 
@@ -261,3 +284,95 @@ class AVLTree(object):
 	"""
 	def get_root(self):
 		return self.root
+
+
+	#Helping Functions
+
+
+	def Rotate(self,x): #ALOT OF REPERETIVE CODE, WILL EDIT LATER (Maybe lol)
+		h = 0
+
+		if x.BF ==-2:
+			#what is the BF of the RIGHT son?
+			if x.right.BF == -1:
+				A = x
+				B = x.right
+				C = x.right.right
+
+				B.parent = A.parent
+				A.left = A.right = AVLNode(isRealNodeOverride=False)
+				B.left = A
+				A.parent = B
+
+				A.setHeight(-1)
+				B.setHeight(1)
+
+
+			if x.right.BF == 1:
+				A = x
+				B = x.right
+				C = x.right.left
+
+				C.parent = A.parent
+				A.parent = C
+				B.parent = C
+
+				C.left = A
+				C.right = B
+
+				A.left = A.right = AVLNode(isRealNodeOverride=False)
+				B.left = A.right = AVLNode(isRealNodeOverride=False)
+
+				A.setHeight(-1)
+				B.setHeight(-1)
+				C.setHeight(1)
+
+		else: #x.BF == 2
+			# what is the BF of the LEFT  son?
+			if x.left == -1:
+				A = x
+				B = x.left
+				C = x.left.right
+
+				C.parent = A.parent
+				A.parent = C
+				B.parent = C
+
+				C.right = A
+				C.left = B
+
+				A.left = A.right = AVLNode(isRealNodeOverride=False)
+				B.left = A.right = AVLNode(isRealNodeOverride=False)
+
+				A.setHeight(-1)
+				B.setHeight(-1)
+				C.setHeight(1)
+
+			if x.left == 1:
+				A = x
+				B = x.left
+				C = x.left.left
+
+				B.parent = A.parent
+				A.left = A.right = AVLNode(isRealNodeOverride=False)
+				B.right = A
+				A.parent = B
+
+				A.setHeight(-1)
+				B.setHeight(1)
+				C.setHeight(-1)
+
+
+		return h
+	def Rebalance(self,x):
+		y = x.parent
+		while y is not None:
+			bf = y.BF
+			if abs(bf) <2 and (y.height == y.oldHeight):
+				break
+			elif abs(bf)<2 and y.height != y.oldHeight:
+				y = y.parent
+			else:
+				self.Rotate(y)
+				break
+
