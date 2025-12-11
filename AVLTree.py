@@ -45,6 +45,9 @@ class AVLNode(object):
 		return self.isRealNode # Need to maintain it
 
 	def BF(self, y):
+		b = max(y.height.left,y.height.right) + 1
+		if b!= self.height:  #updating the height just in case
+			self.setheight(b)
 		return y.left.height - y.right.height
 """
 A class implementing an AVL tree.
@@ -55,8 +58,8 @@ class AVLTree(object):
 	"""
 	Constructor, you are allowed to add more fields.
 	"""
-	def __init__(self):
-		self.root = None
+	def __init__(self,root =None):
+		self.root = root
 		self.max_node = None
 
 
@@ -107,9 +110,9 @@ class AVLTree(object):
 	"""
 	def insert(self, key, val):
 		e =0
-		h=0
+		h =0
 		x = AVLNode(key,val)
-		if self.root is None:
+		if self.root is None: # Inserting the node like in normal BTS
 			self.root = AVLNode(key,val)
 			self.max_node = self.root
 			return self.root,e,h
@@ -123,8 +126,10 @@ class AVLTree(object):
 		if A.parent.key < key : A.right = x
 		else: A.left = x
 
-		self.Rebalance(x)
-		return x,e,h # I dont understand what they want h to be and how to get it
+		h = self.Rebalance(x) #Rebalancing the Tree and saving the number of promotions it took in h
+
+		if x.key > self.max_node.key: self.max_node = x #Maintenance on max_node
+		return x,e,h # I dont understand what they want h to be and how to get it ( Think I got it :) )
 
 
 
@@ -202,7 +207,7 @@ class AVLTree(object):
 
 			#No need to update the root of the tree, as it remains self.root
 
-			#NEED TO BALANCE THE TREE
+			#in the join we already rebalanced the tree so it is a balanced AVL Tree
 
 
 
@@ -274,7 +279,12 @@ class AVLTree(object):
 	@returns: the number of items in dictionary 
 	"""
 	def size(self):
-		return -1	
+		A = self.root
+		if (A.isRealNode != True):
+			return 0
+		if ( A.isRealNode == True):
+			return AVLTree(root=A.left).size() + AVLTree(root =A.right).size() + 1
+
 
 
 	"""returns the root of the tree representing the dictionary
@@ -366,13 +376,16 @@ class AVLTree(object):
 		return h
 	def Rebalance(self,x):
 		y = x.parent
+		promotions =0
 		while y is not None:
-			bf = y.BF
+			bf = y.BF # Will also update the height if needed
 			if abs(bf) <2 and (y.height == y.oldHeight):
 				break
 			elif abs(bf)<2 and y.height != y.oldHeight:
 				y = y.parent
+				promotions+=1
 			else:
 				self.Rotate(y)
 				break
+		return promotions
 
