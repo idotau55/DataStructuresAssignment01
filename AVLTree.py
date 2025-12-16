@@ -23,11 +23,11 @@ class AVLNode(object):
 	def __init__(self, key=-1, value=-1,isRealNodeOverride = True):
 		self.key = key
 		self.value = value
-		self.left = AVLNode(isRealNodeOverride = False)
-		self.right = AVLNode(isRealNodeOverride = False)
+		self.isRealNode = isRealNodeOverride
+		self.left = AVLNode(isRealNodeOverride = False) if (self.isRealNode == True) else None
+		self.right = AVLNode(isRealNodeOverride = False) if (self.isRealNode == True) else None
 		self.parent = None
 		self.height = -1
-		self.isRealNode = isRealNodeOverride
 		self.oldHeight = -1 #EACH TIME WE EDIT A HEIGHT WE NEED TO REMEMBER TO PUT IT FIRST IN THE OLD HEIGHT, THIS IS FOR THE INSERT AND DELETE FUCTIONS
 							# DO NOT EDIT HEIGHT MANUALLY, ONLY WITH THE setheight() funtion
 
@@ -44,11 +44,24 @@ class AVLNode(object):
 	def is_real_node(self):
 		return self.isRealNode # Need to maintain it
 
-	def BF(self, y):
-		b = max(y.height.left,y.height.right) + 1
-		if b!= self.height:  #updating the height just in case
-			self.setheight(b)
-		return y.left.height - y.right.height
+	def BF(self):
+
+		#Dealing with edge cases
+		if self.left is None and self.right is None: return 0
+
+		elif self.left is not None and self.right is None:
+			if self.left.height +1 != self.height: self.setheight(self.left.height +1)
+			return (self.left.height +1)
+
+		elif self.left is None and self.right is not None:
+			if (1 -self.right.height) != self.height: self.setheight(1 -self.right.height)
+			return (1 -self.right.height)
+
+		else:
+			b = max(self.left.height,self.right.height) + 1
+			if b!= self.height:  #updating the height just in case
+				self.setheight(b)
+			return self.left.height - self.right.height
 """
 A class implementing an AVL tree.
 """
@@ -117,14 +130,19 @@ class AVLTree(object):
 			self.max_node = self.root
 			return self.root,e,h
 		A = self.root
+		PARENT = None
 		while A is not None:
+			PARENT = A
 			if A.key < key:
 				A = A.right
 			else:
 				A = A.left
 			e+=1
-		if A.parent.key < key : A.right = x
-		else: A.left = x
+
+		if PARENT.key < key : PARENT.right = x
+		else: PARENT.left = x
+
+		x.parent = PARENT
 
 		h = self.Rebalance(x) #Rebalancing the Tree and saving the number of promotions it took in h
 
@@ -283,7 +301,8 @@ class AVLTree(object):
 		if (A.isRealNode != True):
 			return 0
 		if ( A.isRealNode == True):
-			return AVLTree(root=A.left).size() + AVLTree(root =A.right).size() + 1
+			currsize = AVLTree(root=A.left).size() + AVLTree(root =A.right).size() + 1
+			return currsize
 
 
 
@@ -378,7 +397,7 @@ class AVLTree(object):
 		y = x.parent
 		promotions =0
 		while y is not None:
-			bf = y.BF # Will also update the height if needed
+			bf = y.BF() # Will also update the height if needed
 			if abs(bf) <2 and (y.height == y.oldHeight):
 				break
 			elif abs(bf)<2 and y.height != y.oldHeight:
