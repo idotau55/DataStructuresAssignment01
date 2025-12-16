@@ -92,8 +92,8 @@ class AVLTree(object):
 	def search_rec(self,A,key,e):
 		if A is None: return None,e
 		if A.key == key: return A,e
-		elif A.key <key: return key.search_rec(A.right, key, e + 1)
-		else: return key.search_rec(A.left, key, e + 1)
+		elif A.key < key: return self.search_rec(A.right, key, e + 1)
+		else: return self.search_rec(A.left, key, e + 1)
 
 	"""searches for a node in the dictionary corresponding to the key, starting at the max
         
@@ -131,16 +131,18 @@ class AVLTree(object):
 			return self.root,e,h
 		A = self.root
 		PARENT = None
-		while A is not None:
+		while A.isRealNode == True:
 			PARENT = A
 			if A.key < key:
 				A = A.right
 			else:
 				A = A.left
 			e+=1
+		if PARENT.key < key :
+			PARENT.right = x
+		else:
+			PARENT.left = x
 
-		if PARENT.key < key : PARENT.right = x
-		else: PARENT.left = x
 
 		x.parent = PARENT
 
