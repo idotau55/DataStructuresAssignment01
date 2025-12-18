@@ -233,8 +233,14 @@ class AVLTree(object):
                 continue
             sub_T = sub_T.right
 
-        x.parent = sub_T.parent
-        sub_T = x
+        sub_T = sub_T.parent
+        x.parent = sub_T
+
+        if key > sub_T.key:
+            sub_T.right = x
+        else:
+            sub_T.left = x
+        
         h = self.Rebalance(x)  # Rebalancing the Tree and saving the number of promotions it took in h
         return x, b, h
 
