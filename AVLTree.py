@@ -205,12 +205,14 @@ class AVLTree(object):
 
         if key > A.key:  # bigger than max
             e += 1
-            self._pointer = x
+            A.right = x
+            self.max_node_pointer = x
             x.parent = A
+            h = self.Rebalance(x)
             return x, e, h
 
         '''key is in the left subtree'''
-        if key < self.root:
+        if key < self.root.key:
             A = self.root
             e = A.height
             return self.finger_put(A, x, e, key)
