@@ -251,8 +251,71 @@ class AVLTree(object):
     """
 
     def delete(self, node):
+
+        # If the node to delete is the root of the tree
+        if node.parent is None:
+            # Handling for root deletion
+            if self.isLeaf(node):  # If root is a leaf, make tree empty
+                self.root = AVLNode(isRealNodeOverride=False)
+            elif self.numOfChildren(node) == 1:  # Only one child
+                self.root = node.right if node.right else node.left
+                if self.root:
+                    self.root.parent = None
+            elif self.numOfChildren(node) == 2:  # Two children
+                y = self.getSuccessor(node)  # Get the successor
+                self.delete(y)  # Remove the successor
+                # Replace root with successor
+                y.left = node.left
+                y.right = node.right
+                if node.left:
+                    node.left.parent = y
+                if node.right:
+                    node.right.parent = y
+                y.parent = None
+                self.root = y
+            return
+
+
+        w = node.parent
+        #first we delete like in BST
+        if self.isLeaf(node): #if he is a leaf we simply remove him
+            if node.parent.left == node: node.parent.left = AVLNode(isRealNodeOverride=False)
+            else: node.parent.right =  AVLNode(isRealNodeOverride=False)
+        elif self.numOfChildren(node) ==1 :
+            if node.right != None: # if we only have one child, bypassing the node
+                if node.parent.left == node: node.parent.left = node.right
+                else: node.parent.right = node.right
+            elif node.left != None:
+                if node.parent.left == node: node.parent.left = node.left
+                else: node.parent.right = node.left
+        elif self.numOfChildren(node) == 2: # if we have 2 children, we replace the node with successor and remove the successor.
+            y = self.getSuccessor(node) #saving successor
+            self.delete(y)
+            if node.parent.left == node: node.parent.left = y #replacing the node with the successor (without copying)
+            else: node.parent.right = y
+            y.right = node.right
+            y.left = node.left
+        #Finished BST
+        while w is not None:
+            bf =w.BF()
+            if abs(bf) < 2 and (w.height == w.oldHeight): break
+            elif abs(bf) < 2 and (w.height != w.oldHeight): w = w.parent
+            else:
+                self.Rotate(w)
+                w = w.parent
+
         return
 
+
+
+
+
+
+
+
+
+
+        return
     """joins self with item and another AVLTree
 
     @type tree2: AVLTree 
@@ -480,3 +543,24 @@ class AVLTree(object):
                 self.Rotate(y)
                 break
         return promotions
+
+    def getSuccessor(self,x):
+        if x.right is not None:
+            x = x.right
+            while x.left is not None:
+                y =x
+                x = x.left
+            return y
+        else:
+            while x.parent is not None and x == x.parent.right:
+                x = x.parent
+            return x.parent
+
+    def isLeaf(self,x):
+        return x.left.isRealNode == False and x.right.isRealNode == False
+
+    def numOfChildren(self,x): #number of direct children
+        child_num =0
+        if x.left.isRealNode: child_num+=1
+        if x.right.isRealNode: child_num+=1
+        return child_num
