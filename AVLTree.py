@@ -25,6 +25,9 @@ class AVLNode(object):
         self.isRealNode = isRealNodeOverride
         self.left = AVLNode(isRealNodeOverride=False) if (self.isRealNode == True) else None
         self.right = AVLNode(isRealNodeOverride=False) if (self.isRealNode == True) else None
+        if self.isRealNode:
+            self.left.parent = self
+            self.right.parent = self
         self.parent = None
         self.height = -1
         self.oldHeight = -1  # EACH TIME WE EDIT A HEIGHT WE NEED TO REMEMBER TO PUT IT FIRST IN THE OLD HEIGHT, THIS IS FOR THE INSERT AND DELETE FUCTIONS
@@ -457,79 +460,61 @@ class AVLTree(object):
         return self.root
 
     # Helping Functions
+    def right_rotation(self, B):
+        A = B.left
+        B.left = A.right
+        if A.right.isRealNode:
+            A.right.parent = B
+
+        A.right = B
+        A.parent = B.parent
+        if B.parent is None:
+            self.root = A
+        elif B.parent.right == B:
+            B.parent.right = A
+        else:
+            B.parent.left = A
+        B.parent = A
+
+        # Update heights
+        B.setheight(max(B.left.height, B.right.height) + 1)
+        A.setheight(max(A.left.height, A.right.height) + 1)
+
+    def left_rotation(self, A):
+        B = A.right
+        A.right = B.left
+        if B.left.isRealNode:
+            B.left.parent = A
+
+        B.left = A
+        B.parent = A.parent
+        if A.parent is None:
+            self.root = B
+        elif A.parent.left == A:
+            A.parent.left = B
+        else:
+            A.parent.right = B
+        A.parent = B
+
+        # Update heights
+        A.setheight(max(A.left.height, A.right.height) + 1)
+        B.setheight(max(B.left.height, B.right.height) + 1)
 
     def Rotate(self, x):  # ALOT OF REPERETIVE CODE, WILL EDIT LATER (Maybe lol)
         h = 0
-
-        if x.BF == -2:
-            # what is the BF of the RIGHT son?
-            if x.right.BF == -1:
-                A = x
-                B = x.right
-                C = x.right.right
-
-                B.parent = A.parent
-                A.left = A.right = AVLNode(isRealNodeOverride=False)
-                B.left = A
-                A.parent = B
-
-                A.setHeight(-1)
-                B.setHeight(1)
-
-            if x.right.BF == 1:
-                A = x
-                B = x.right
-                C = x.right.left
-
-                C.parent = A.parent
-                A.parent = C
-                B.parent = C
-
-                C.left = A
-                C.right = B
-
-                A.left = A.right = AVLNode(isRealNodeOverride=False)
-                B.left = A.right = AVLNode(isRealNodeOverride=False)
-
-                A.setHeight(-1)
-                B.setHeight(-1)
-                C.setHeight(1)
-
-        else:  # x.BF == 2
-            # what is the BF of the LEFT  son?
-            if x.left == -1:
-                A = x
-                B = x.left
-                C = x.left.right
-
-                C.parent = A.parent
-                A.parent = C
-                B.parent = C
-
-                C.right = A
-                C.left = B
-
-                A.left = A.right = AVLNode(isRealNodeOverride=False)
-                B.left = A.right = AVLNode(isRealNodeOverride=False)
-
-                A.setHeight(-1)
-                B.setHeight(-1)
-                C.setHeight(1)
-
-            if x.left == 1:
-                A = x
-                B = x.left
-                C = x.left.left
-
-                B.parent = A.parent
-                A.left = A.right = AVLNode(isRealNodeOverride=False)
-                B.right = A
-                A.parent = B
-
-                A.setHeight(-1)
-                B.setHeight(1)
-                C.setHeight(-1)
-
+        bf = x.BF()
+        if bf == 2:
+            if x.left.BF() == -1:
+                self.left_rotation(x.left)
+                self.right_rotation(x)
+            else:
+                self.right_rotation(x)
+        elif bf == -2:
+            if x.right.BF() == 1:
+                self.right_rotation(x.right)
+                self.left_rotation(x)
+            else:
+                self.left_rotation(x)
         return h
 
     def Rebalance(self, x):
