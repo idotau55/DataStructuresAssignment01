@@ -77,7 +77,7 @@ class AVLTree(object):
 
     def __init__(self, root=None):
         self.root = root
-        self.max_node = None
+        self.max_node_pointer = None
 
     """searches for a node in the dictionary corresponding to the key (starting at the root)
 
@@ -112,7 +112,7 @@ class AVLTree(object):
     """
 
     def finger_search(self, key):  # O(log n)
-        A = self.max_node
+        A = self.max_node()
         e = 1
 
         if A is None:
@@ -156,7 +156,7 @@ class AVLTree(object):
         x = AVLNode(key, val)
         if self.root is None:  # Inserting the node like in normal BTS
             self.root = AVLNode(key, val)
-            self.max_node = self.root
+            self.max_node_pointer = self.root
             return self.root, e, h
         A = self.root
         PARENT = None
@@ -176,7 +176,7 @@ class AVLTree(object):
 
         h = self.Rebalance(x)  # Rebalancing the Tree and saving the number of promotions it took in h
 
-        if x.key > self.max_node.key: self.max_node = x  # Maintenance on max_node
+        if x.key > self.max_node_pointer.key: self.max_node_pointer = x  # Maintenance on max_node_pointer
         return x, e, h  # I dont understand what they want h to be and how to get it ( Think I got it :) )
 
     """inserts a new node into the dictionary with corresponding key and value, starting at the max
@@ -200,12 +200,12 @@ class AVLTree(object):
 
         if self.root is None:  # empty tree
             self.root = x
-            self.max_node = x
+            self.max_node_pointer = x
             return x, e, h
 
         if key > A.key:  # bigger than max
             e += 1
-            self.max_node = x
+            self._pointer = x
             x.parent = A
             return x, e, h
 
@@ -251,7 +251,6 @@ class AVLTree(object):
     """
 
     def delete(self, node):
-
         # If the node to delete is the root of the tree
         if node.parent is None:
             # Handling for root deletion
@@ -304,6 +303,8 @@ class AVLTree(object):
                 self.Rotate(w)
                 w = w.parent
 
+        if self.max_node_pointer == node: #Checks if we deleted the max node
+            self.calculate_new_max_node()
         return
 
 
@@ -428,7 +429,7 @@ class AVLTree(object):
     """
 
     def max_node(self):
-        return None
+        return self.max_node_pointer
 
     """returns the number of items in dictionary 
 
@@ -554,8 +555,8 @@ class AVLTree(object):
         else:
             while x.parent is not None and x == x.parent.right:
                 x = x.parent
-            return x.parent
-
+            #return x.parent
+            return x
     def isLeaf(self,x):
         return x.left.isRealNode == False and x.right.isRealNode == False
 
@@ -564,3 +565,14 @@ class AVLTree(object):
         if x.left.isRealNode: child_num+=1
         if x.right.isRealNode: child_num+=1
         return child_num
+
+    def calculate_new_max_node(self):
+        if not self.root:  # If the tree is empty
+            return None
+
+        current = self.root
+        while current and current.right is not None:
+            temp = current
+            current = current.right
+
+        self.max_node_pointer = temp

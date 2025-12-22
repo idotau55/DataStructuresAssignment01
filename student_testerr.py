@@ -76,14 +76,11 @@ class BasicStudentTester(unittest.TestCase):
         vals = [10, 4, 22, 8, 30, 1, 15]
         for x in vals:
             self.T.insert(x, str(x))
-
         # Max should be 30
         self.assertIsNotNone(self.T.max_node())
         self.assertEqual(self.T.max_node().key, 30)
-
         # Delete the max node
         self.T.delete(self.T.search(30)[0])
-
         # Max should now be 22
         self.assertEqual(self.T.max_node().key, 22)
 
