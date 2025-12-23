@@ -1,6 +1,6 @@
-# id1:
-# name1:
-# username1:
+# id1: 328102975
+# name1: Ariel Rosen
+# username1: arielrosen
 # id2:
 # name2:
 # username2:
@@ -114,31 +114,26 @@ class AVLTree(object):
     and e is the number of edges on the path between the starting node and ending node+1.
     """
 
-    def finger_search(self, key):  # O(log n)
+    def finger_search(self, key):  # O(log k)
         A = self.max_node()
         e = 1
 
         if A is None:
-            return None, e
+            return None, 0  # Empty tree
+        if A.key == key:  # Check Max immediately
+            return A, e
 
-        if key == self.root.key:
-            A = self.root
-            return A, A.height
+        while A.parent is not None and A.key > key:  # Climb Up the finger
+            if A.parent.key < key:
+                break
 
-        if key < self.root:  # key is in the left subtree
-            A = self.root
-            e = A.height
-            A, b = A.search(key)
-            return A, e + b
-
-        while A > key and A != self.root:  # get to the smallest tree that contains the key
             A = A.parent
             e += 1
-            if A == key:
+
+            if A.key == key:
                 return A, e
 
-        A, b = A.search(key)
-        return A, e + b
+        return self.search_rec(A, key, e)  # search down
 
     """inserts a new node into the dictionary with corresponding key and value (starting at the root)
 
@@ -194,59 +189,54 @@ class AVLTree(object):
     e is the number of edges on the path between the starting node and new node before rebalancing,
     and h is the number of PROMOTE cases during the AVL rebalancing
     """
-
     def finger_insert(self, key, val):  # O(log n)
-        A = self.max_node()
-        e = 0
-        h = 0
         x = AVLNode(key, val)
 
         if self.root is None:  # empty tree
             self.root = x
             self.max_node_pointer = x
-            return x, e, h
+            return x, 0, 0
 
-        if key > A.key:  # bigger than max
-            e += 1
+        A = self.max_node()
+        e = 0
+        h = 0
+
+        # Case 1: Key is larger than the current max
+        if key > A.key:
+            e = 1  # 1 edge from old Max to new Node
             A.right = x
             self.max_node_pointer = x
             x.parent = A
             h = self.Rebalance(x)
             return x, e, h
 
-        '''key is in the left subtree'''
-        if key < self.root.key:
-            A = self.root
-            e = A.height
-            return self.finger_put(A, x, e, key)
-
-        '''key is in the right subtree'''
-        while A.key > key and A != self.root:  # get to the smallest tree that contains the key
-            e += 1
+        # Case 2: Key is smaller than max
+        while A.parent is not None and A.key > key:
             A = A.parent
+            e += 1
+
         return self.finger_put(A, x, e, key)
 
-    """
-    Helper method: inserts the node into place inside the sub tree
-    """
     def finger_put(self, sub_T, x, e, key):  # O(log n)
         b = e
+        # Search down from the sub_T node found in finger_insert
         while sub_T.isRealNode:
             b += 1
             if key < sub_T.key:
                 sub_T = sub_T.left
-                continue
-            sub_T = sub_T.right
+            else:
+                sub_T = sub_T.right
 
-        sub_T = sub_T.parent
-        x.parent = sub_T
+        # attach new node to parent
+        parent = sub_T.parent
+        x.parent = parent
 
-        if key > sub_T.key:
-            sub_T.right = x
+        if key < parent.key:
+            parent.left = x
         else:
-            sub_T.left = x
-        
-        h = self.Rebalance(x)  # Rebalancing the Tree and saving the number of promotions it took in h
+            parent.right = x
+
+        h = self.Rebalance(x)
         return x, b, h
 
     """deletes node from the dictionary
@@ -279,49 +269,51 @@ class AVLTree(object):
                 self.root = y
             return
 
-
         w = node.parent
-        #first we delete like in BST
-        if self.isLeaf(node): #if he is a leaf we simply remove him
-            if node.parent.left == node: node.parent.left = AVLNode(isRealNodeOverride=False)
-            else: node.parent.right =  AVLNode(isRealNodeOverride=False)
-        elif self.numOfChildren(node) ==1 :
-            if node.right != None: # if we only have one child, bypassing the node
-                if node.parent.left == node: node.parent.left = node.right
-                else: node.parent.right = node.right
+        # first we delete like in BST
+        if self.isLeaf(node):  # if he is a leaf we simply remove him
+            if node.parent.left == node:
+                node.parent.left = AVLNode(isRealNodeOverride=False)
+            else:
+                node.parent.right = AVLNode(isRealNodeOverride=False)
+        elif self.numOfChildren(node) == 1:
+            if node.right != None:  # if we only have one child, bypassing the node
+                if node.parent.left == node:
+                    node.parent.left = node.right
+                else:
+                    node.parent.right = node.right
             elif node.left != None:
-                if node.parent.left == node: node.parent.left = node.left
-                else: node.parent.right = node.left
-        elif self.numOfChildren(node) == 2: # if we have 2 children, we replace the node with successor and remove the successor.
-            y = self.getSuccessor(node) #saving successor
+                if node.parent.left == node:
+                    node.parent.left = node.left
+                else:
+                    node.parent.right = node.left
+        elif self.numOfChildren(
+                node) == 2:  # if we have 2 children, we replace the node with successor and remove the successor.
+            y = self.getSuccessor(node)  # saving successor
             self.delete(y)
-            if node.parent.left == node: node.parent.left = y #replacing the node with the successor (without copying)
-            else: node.parent.right = y
+            if node.parent.left == node:
+                node.parent.left = y  # replacing the node with the successor (without copying)
+            else:
+                node.parent.right = y
             y.right = node.right
             y.left = node.left
-        #Finished BST
+        # Finished BST
         while w is not None:
-            bf =w.BF()
-            if abs(bf) < 2 and (w.height == w.oldHeight): break
-            elif abs(bf) < 2 and (w.height != w.oldHeight): w = w.parent
+            bf = w.BF()
+            if abs(bf) < 2 and (w.height == w.oldHeight):
+                break
+            elif abs(bf) < 2 and (w.height != w.oldHeight):
+                w = w.parent
             else:
                 self.Rotate(w)
                 w = w.parent
 
-        if self.max_node_pointer == node: #Checks if we deleted the max node
+        if self.max_node_pointer == node:  # Checks if we deleted the max node
             self.calculate_new_max_node()
         return
 
-
-
-
-
-
-
-
-
-
         return
+
     """joins self with item and another AVLTree
 
     @type tree2: AVLTree 
@@ -532,25 +524,26 @@ class AVLTree(object):
                 break
         return promotions
 
-    def getSuccessor(self,x):
+    def getSuccessor(self, x):
         if x.right is not None:
             x = x.right
             while x.left is not None:
-                y =x
+                y = x
                 x = x.left
             return y
         else:
             while x.parent is not None and x == x.parent.right:
                 x = x.parent
-            #return x.parent
+            # return x.parent
             return x
-    def isLeaf(self,x):
+
+    def isLeaf(self, x):
         return x.left.isRealNode == False and x.right.isRealNode == False
 
-    def numOfChildren(self,x): #number of direct children
-        child_num =0
-        if x.left.isRealNode: child_num+=1
-        if x.right.isRealNode: child_num+=1
+    def numOfChildren(self, x):  # number of direct children
+        child_num = 0
+        if x.left.isRealNode: child_num += 1
+        if x.right.isRealNode: child_num += 1
         return child_num
 
     def calculate_new_max_node(self):
