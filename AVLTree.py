@@ -34,7 +34,7 @@ class AVLNode(object):
 
     # DO NOT EDIT HEIGHT MANUALLY, ONLY WITH THE setheight() funtion
 
-    def setheight(self, newHeight):
+    def setheight(self, newHeight): # O(1)
         self.oldHeight = self.height
         self.height = newHeight
 
@@ -44,10 +44,10 @@ class AVLNode(object):
     @returns: False if self is a virtual node, True otherwise.
     """
 
-    def is_real_node(self):
+    def is_real_node(self): # O(1)
         return self.isRealNode  # Need to maintain it
 
-    def BF(self):
+    def BF(self): # O(1)
 
         # Dealing with edge cases
         if self.left is None and self.right is None:
@@ -245,7 +245,7 @@ class AVLTree(object):
     @pre: node is a real pointer to a node in self
     """
 
-    def delete(self, node):
+    def delete(self, node):  # O(log n)
         # If the node to delete is the root of the tree
         if node.parent is None:
             # Handling for root deletion
@@ -326,7 +326,7 @@ class AVLTree(object):
     or the opposite way
     """
 
-    def join(self, tree2, key, val):
+    def join(self, tree2, key, val):  # O(log n)
         x = AVLNode(key, val, )
         if self.root.height > key > tree2.root.height:
             B = tree2.max_node()
@@ -376,7 +376,7 @@ class AVLTree(object):
     dictionary larger than node.key.
     """
 
-    def split(self, node):
+    def split(self, node):  # O(log n)
         T1 = AVLTree()
         T1.root = node.left
         T2 = AVLTree()
@@ -425,7 +425,7 @@ class AVLTree(object):
     @returns: the maximal node, None if the dictionary is empty
     """
 
-    def max_node(self):
+    def max_node(self):  # O(1)
         return self.max_node_pointer
 
     """returns the number of items in dictionary 
@@ -434,7 +434,7 @@ class AVLTree(object):
     @returns: the number of items in dictionary 
     """
 
-    def size(self):
+    def size(self):  # O(n)
         A = self.root
         if not A.isRealNode:
             return 0
@@ -448,11 +448,11 @@ class AVLTree(object):
     @returns: the root, None if the dictionary is empty
     """
 
-    def get_root(self):
+    def get_root(self):  # O(1)
         return self.root
 
     # Helping Functions
-    def right_rotation(self, B):
+    def right_rotation(self, B):  # O(1)
         A = B.left
         B.left = A.right
         if A.right.isRealNode:
@@ -472,7 +472,7 @@ class AVLTree(object):
         B.setheight(max(B.left.height, B.right.height) + 1)
         A.setheight(max(A.left.height, A.right.height) + 1)
 
-    def left_rotation(self, A):
+    def left_rotation(self, A):  # O(1)
         B = A.right
         A.right = B.left
         if B.left.isRealNode:
@@ -492,7 +492,7 @@ class AVLTree(object):
         A.setheight(max(A.left.height, A.right.height) + 1)
         B.setheight(max(B.left.height, B.right.height) + 1)
 
-    def Rotate(self, x):  # ALOT OF REPERETIVE CODE, WILL EDIT LATER (Maybe lol)
+    def Rotate(self, x):  # O(1)
         h = 0
         bf = x.BF()
         if bf == 2:
@@ -509,7 +509,7 @@ class AVLTree(object):
                 self.left_rotation(x)
         return h
 
-    def Rebalance(self, x):
+    def Rebalance(self, x):  # O(log(n))
         y = x.parent
         promotions = 0
         while y is not None:
@@ -524,7 +524,7 @@ class AVLTree(object):
                 break
         return promotions
 
-    def getSuccessor(self, x):
+    def getSuccessor(self, x):  # O(log(n))
         if x.right is not None:
             x = x.right
             while x.left is not None:
@@ -534,19 +534,19 @@ class AVLTree(object):
         else:
             while x.parent is not None and x == x.parent.right:
                 x = x.parent
-            # return x.parent
             return x
 
-    def isLeaf(self, x):
+    def isLeaf(self, x):  # O(1)
         return x.left.isRealNode == False and x.right.isRealNode == False
 
-    def numOfChildren(self, x):  # number of direct children
+    # number of direct children
+    def numOfChildren(self, x):  # O(1)
         child_num = 0
         if x.left.isRealNode: child_num += 1
         if x.right.isRealNode: child_num += 1
         return child_num
 
-    def calculate_new_max_node(self):
+    def calculate_new_max_node(self):  # O(log(n))
         if not self.root:  # If the tree is empty
             return None
 
@@ -556,3 +556,4 @@ class AVLTree(object):
             current = current.right
 
         self.max_node_pointer = temp
+
