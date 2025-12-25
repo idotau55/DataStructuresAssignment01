@@ -1,9 +1,9 @@
 # id1: 328102975
 # name1: Ariel Rosen
 # username1: arielrosen
-# id2:
-# name2:
-# username2:
+# id2: 324190362
+# name2: Ido Rennert
+# username2: idorennert
 
 
 """A class represnting a node in an AVL tree"""
@@ -556,4 +556,5 @@ class AVLTree(object):
             current = current.right
 
         self.max_node_pointer = temp
+
 
